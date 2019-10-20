@@ -15,10 +15,10 @@ public interface AccountDao {
 
     // 查询所有账户
     @Select("select * from account")
-    public List<Account> findAll();
+    List<Account> findAll();
 
     // 保存帐户信息
     @Insert("insert into account (name,money) values (#{name},#{money})")
-    public void saveAccount(Account account);
+    void saveAccount(Account account);
 
 }

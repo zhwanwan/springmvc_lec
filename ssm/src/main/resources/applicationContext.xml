@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans.xsd
 	http://www.springframework.org/schema/context
@@ -13,24 +13,32 @@
 	http://www.springframework.org/schema/tx
 	http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-    <!--开启注解的扫描，希望处理service和dao，controller不需要Spring框架去处理-->
-    <context:component-scan base-package="cn.itcast" >
-        <!--配置哪些注解不扫描-->
-        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    <!--三层架构中：
+        表现层：SpringMVC框架,配置文件是springmvc.xml
+        业务层：Spring框架，配置文件是applicationContext.xml
+        持久层：MyBatis框架,在spring配置文件中整合
+
+        开启注解的扫描，希望处理service和dao，controller不需要Spring框架去处理
+    -->
+    <context:component-scan base-package="cn.itcast">
+        <!--配置哪些注解不扫描,controller由springmvc框架管理-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
+
+    <context:property-placeholder location="classpath:jdbcConfig.properties"/>
 
     <!--Spring整合MyBatis框架-->
     <!--配置连接池-->
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
-        <property name="jdbcUrl" value="jdbc:mysql:///ssm"/>
-        <property name="user" value="root"/>
-        <property name="password" value="root"/>
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
     </bean>
 
     <!--配置SqlSessionFactory工厂-->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
+        <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <!--配置AccountDao接口所在包-->
@@ -41,7 +49,7 @@
     <!--配置Spring框架声明式事务管理-->
     <!--配置事务管理器-->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource" />
+        <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <!--配置事务通知-->
@@ -54,7 +62,8 @@
 
     <!--配置AOP增强-->
     <aop:config>
-        <aop:advisor advice-ref="txAdvice" pointcut="execution(* cn.itcast.service.impl.*ServiceImpl.*(..))"/>
+        <aop:pointcut id="pt1" expression="execution(* cn.itcast.service.impl.*ServiceImpl.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pt1"/>
     </aop:config>
 
 </beans>
